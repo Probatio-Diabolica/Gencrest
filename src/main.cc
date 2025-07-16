@@ -42,10 +42,10 @@ int main(int argc, char* argv[])
     }
 
 
-    constexpr unsigned winWidth  = 900;
-    constexpr unsigned winHeight = 900;
+    constexpr unsigned winWidth  = 1900;
+    constexpr unsigned winHeight = 1080;
 
-    sf::RenderWindow window(sf::VideoMode({winWidth,winHeight}),"Hill");
+    sf::RenderWindow window(sf::VideoMode({winWidth,winHeight}),"Gen");
     window.setFramerateLimit(120);
 
     try
@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
         {
             while (const std::optional event = window.pollEvent())
             {
-                // Request for closing the window
                 if (event->is<sf::Event::Closed>())
                 window.close();
             }

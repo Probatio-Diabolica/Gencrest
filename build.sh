@@ -16,5 +16,3 @@ cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
 echo "Building project..."
 cmake --build "$BUILD_DIR" -- -j$(nproc)
 
-echo "Build complete. Executable should be at: $BUILD_DIR/"
-
