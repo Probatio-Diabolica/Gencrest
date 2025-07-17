@@ -1,24 +1,40 @@
 #include "../include/Picture.hpp"
 #include "../include/Util.hpp"
+#include "Ellipse.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <format>
 #include <stdexcept>
 #include <iostream>
+
+namespace  {
+    float iScale = 1.f;
+    int gap = 10;
+    sf::Vector2f scale{1.f,1.f};
+    sf::Vector2f compressedScale{0.25f,0.25f};
+    sf::Vector2f extraScale{4.f,4.f};
+
+    sf::Vector2f inputScale = compressedScale;
+    sf::Vector2f outputScale = scale;
+    sf::Vector2f processScale = scale;
+}
 
 Picture::Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow)
     :   m_ellipseCount(ellipseCount),
         m_window(renderWindow)
 {
-    if(!m_model.loadFromFile(path)) throw std::runtime_error("Failed to load image: " + path);
+    m_ellipseVec.reserve(5000);
 
+    if(! m_inputImg.loadFromFile(path)) throw std::runtime_error("Failed to load image: " + path);
 
-    m_canvasSize = sf::Vector2f(static_cast<unsigned>(m_model.getSize().x),static_cast<unsigned>(m_model.getSize().y));
-    m_currentImg = sf::Image({static_cast<unsigned>(m_model.getSize().x),static_cast<unsigned>(m_model.getSize().y)},sf::Color::White);
-   
-    m_currentEvolved = m_currentImg;
-    
+    m_canvasSize = sf::Vector2f(static_cast<unsigned>(m_inputImg.getSize().x),static_cast<unsigned>(m_inputImg.getSize().y));
+
+    m_currentOutputImg = sf::Image({static_cast<unsigned>(m_inputImg.getSize().x),static_cast<unsigned>(m_inputImg.getSize().y)},sf::Color::White); 
+
+    m_evolvedOutputImg = m_currentOutputImg;
+
     m_ellipseVec.emplace_back(
         utils::rndVector(m_canvasSize),
         utils::rndVector(m_canvasSize/2.00f),
@@ -26,18 +42,20 @@ Picture::Picture(const std::string& path, int ellipseCount, sf::RenderWindow* re
         utils::rndColor()
     );
 
+    if(! m_inputTexture.loadFromImage(m_inputImg)) throw std::runtime_error("can't load simple texture");
 
-    if(! m_textureModel.loadFromImage(m_model)) throw std::runtime_error("can't load simple texture");
-
-    m_spriteModel.emplace(m_textureModel);
-    m_spriteModel->setScale({4.f,4.f});
-    m_spriteModel->setPosition({0.f, 400.f});
+    m_inputSprite.emplace(m_inputTexture);
+    m_inputSprite->setScale(inputScale);
+    m_inputSprite->setPosition({0.f, 400.f});
 
 
-    if(! m_currentTexture.loadFromImage(m_currentEvolved)) throw std::runtime_error("Can't load current texture");
+    if(! m_currentTexture.loadFromImage(m_evolvedOutputImg)) throw std::runtime_error("Can't load current texture");
 
-    m_spriteCurrent.emplace(m_currentTexture);
-    m_spriteCurrent->setScale({4.f,4.f});
+    m_outputSprite.emplace(m_currentTexture);
+    m_outputSprite->setScale(outputScale);
+
+    float imgWidth = (m_canvasSize.x * m_outputSprite->getScale().x) + gap;
+    m_inputSprite->setPosition({imgWidth ,0.f});
 }
 
 
@@ -58,12 +76,13 @@ void Picture::mutate()
     color.b = std::clamp<int>(color.b + static_cast<int>(utils::rndFloat(-10.f, 10.f)), 0, 255);
     color.a = std::clamp<int>(color.a + static_cast<int>(utils::rndFloat(-10.f, 10.f)), 0, 255);
 
-    m_currentEvolved = m_currentImg;
-    m_ellipseVec[i].renderOnto(m_currentEvolved);
+    m_evolvedOutputImg = m_currentOutputImg;
+
+    m_ellipseVec[i].renderOnto(m_evolvedOutputImg);
 
     computeFitness();
 
-    //rejecting the mutaion in the image. i.e, reject the hypothesis 
+    //rejecting the mutaion in the image. 
     if (m_fitnessCurr >= m_fitnessPrev) 
     {
         m_fitnessCurr = m_fitnessPrev;
@@ -80,7 +99,7 @@ void Picture::mutate()
             m_noEvolutionSteps = 0;
         }
         else m_ellipseVec[i] = m_buffer;
-        
+        // std::cout<<std::format("Rejected mutation {}\n" ,m_fitnessCurr );
     }
     else
     {
@@ -94,13 +113,13 @@ void Picture::mutate()
     {
         if (m_lastMutationAccepted) 
         {
-            m_currentEvolved = m_currentImg;
-            m_buffer.renderOnto(m_currentEvolved);
-            m_currentImg = m_currentEvolved;
+            m_evolvedOutputImg = m_currentOutputImg;
+            m_buffer.renderOnto(m_evolvedOutputImg);
+            m_currentOutputImg = m_evolvedOutputImg;
         } else 
         {
             m_ellipseVec.pop_back();
-            m_currentEvolved = m_currentImg;
+            m_evolvedOutputImg = m_currentOutputImg;
         }
 
         m_ellipseVec.emplace_back(
@@ -119,20 +138,25 @@ void Picture::mutate()
 
 void Picture::draw()
 {
-    if(! m_currentTexture.loadFromImage(m_currentEvolved)) throw  std::runtime_error("failed loading image in draw");
+    if(! m_currentTexture.loadFromImage(m_evolvedOutputImg)) throw  std::runtime_error("failed loading image in draw");
 
-    if (m_spriteCurrent.has_value()) m_spriteCurrent->setTexture(m_currentTexture);
-    else 
+    if (m_outputSprite.has_value()) 
+    {
+        m_outputSprite->setTexture(m_currentTexture);
+
+    }else 
     { 
-        m_spriteCurrent.emplace(m_currentTexture);
-        m_spriteCurrent->setScale({4.f, 4.f});
+        m_outputSprite.emplace(m_currentTexture);
+        // m_outputSprite->setScale(outputScale);
     }
+
+    // m_inputSprite->setScale(scale);
 
     m_window->clear(sf::Color::Black);
 
-    if (m_spriteCurrent) m_window->draw(*m_spriteCurrent);
+    if (m_outputSprite) m_window->draw(*m_outputSprite);
 
-    if (m_spriteModel) m_window->draw(*m_spriteModel);
+    if (m_inputSprite) m_window->draw(*m_inputSprite);
 
     m_window->display();
 }
@@ -143,18 +167,18 @@ void Picture::computeFitness()
     m_fitnessPrev = m_fitnessCurr;
     m_fitnessCurr = 0.0f;
 
-    const auto [width, height] = m_model.getSize();
+    const auto [width, height] = m_inputImg.getSize();
 
     for(unsigned x = 0; x < width ; ++x)
     {
         for(unsigned y = 0; y < height ; ++y)
         {
-            const auto modelPixel = m_model.getPixel({x,y});
-            const auto currentPixel = m_currentEvolved.getPixel({x,y});
+            const auto inputImgPixel = m_inputImg.getPixel({x,y});
+            const auto outputPixel = m_evolvedOutputImg.getPixel({x,y});
 
-            m_fitnessCurr +=std::abs(static_cast<int>(modelPixel.r) - static_cast<int>(currentPixel.r));
-            m_fitnessCurr +=std::abs(static_cast<int>(modelPixel.g) - static_cast<int>(currentPixel.g));
-            m_fitnessCurr +=std::abs(static_cast<int>(modelPixel.b) - static_cast<int>(currentPixel.b));
+            m_fitnessCurr +=std::abs(static_cast<int>(inputImgPixel.r) - static_cast<int>(outputPixel.r));
+            m_fitnessCurr +=std::abs(static_cast<int>(inputImgPixel.g) - static_cast<int>(outputPixel.g));
+            m_fitnessCurr +=std::abs(static_cast<int>(inputImgPixel.b) - static_cast<int>(outputPixel.b));
         }
     }
 

@@ -21,9 +21,9 @@ public:
 private:
     void draw();
     
-    sf::Image m_model;
-    sf::Image m_currentImg;
-    sf::Image m_currentEvolved;
+    sf::Image m_inputImg;
+    sf::Image m_currentOutputImg;
+    sf::Image m_evolvedOutputImg;
 
     std::vector<Ellipse>    m_ellipseVec;
     Ellipse                 m_buffer;
@@ -38,9 +38,9 @@ private:
     sf::Vector2f m_canvasSize;
 
     sf::Texture m_currentTexture;
-    sf::Texture m_textureModel;
-    std::optional<sf::Sprite>  m_spriteCurrent;
-    std::optional<sf::Sprite>  m_spriteModel;
+    sf::Texture m_inputTexture;
+    std::optional<sf::Sprite>  m_outputSprite;
+    std::optional<sf::Sprite>  m_inputSprite;
 
     sf::RenderWindow* m_window = nullptr;
 };

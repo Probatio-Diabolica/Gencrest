@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     constexpr unsigned winHeight = 1080;
 
     sf::RenderWindow window(sf::VideoMode({winWidth,winHeight}),"Gen");
-    window.setFramerateLimit(120);
+    //window.setFramerateLimit(120);
 
     try
     {
