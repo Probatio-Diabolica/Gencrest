@@ -27,7 +27,8 @@ void Ellipse::computeFoci()
     m_majorRadius = std::max(m_radius.x, m_radius.y);
     float minorSquared = std::pow(std::min(m_radius.x,m_radius.y), 2);
     float majorSquared = m_majorRadius * m_majorRadius;
-    float focalDist = std::sqrt(std::sqrt(std::max(0.0f,majorSquared - minorSquared)));
+    // float focalDist = std::sqrt(std::sqrt(std::max(0.0f,majorSquared - minorSquared)));
+    float focalDist = std::sqrt(std::max(0.0f, majorSquared - minorSquared));
 
     float angleRad = utils::toRadians(m_angleDegree); 
     sf::Vector2f direction(std::cos(angleRad),std::sin(angleRad));
@@ -83,7 +84,7 @@ void Ellipse::renderOnto(sf::Image& image) const
                     static_cast<std::uint8_t>(alpha * m_color.b + (1 - alpha) * old.b),
                     255
                 };
-                //bug prone <- type conversion
+
                 image.setPixel({static_cast<unsigned>(x),static_cast<unsigned>(y)}, blended);
             }
         }

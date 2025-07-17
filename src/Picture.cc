@@ -5,27 +5,36 @@
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <format>
+#include <cmath>
 #include <stdexcept>
 #include <iostream>
 
-namespace  {
+namespace  
+{
     float iScale = 1.f;
     int gap = 10;
-    sf::Vector2f scale{1.f,1.f};
-    sf::Vector2f compressedScale{0.25f,0.25f};
-    sf::Vector2f extraScale{4.f,4.f};
 
-    sf::Vector2f inputScale = compressedScale;
-    sf::Vector2f outputScale = scale;
+    sf::Vector2f maxRadius{0,0};
+    sf::Vector2f minRadius{0,0};
+
+    sf::Vector2f scale{1.f,1.f}; 
+    sf::Vector2f compressedScale{0.25f,0.25f}; 
+    sf::Vector2f extraScale{4.f,4.f};
+    sf::Vector2f ultra{8.f,8.f};
+
+    sf::Vector2f inputScale = extraScale;
+    sf::Vector2f outputScale = extraScale;
     sf::Vector2f processScale = scale;
+
 }
 
-Picture::Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow)
-    :   m_ellipseCount(ellipseCount),
-        m_window(renderWindow)
+//Picture::Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow)
+// :   m_ellipseCount(ellipseCount),
+
+Picture::Picture(const std::string& path, sf::RenderWindow* renderWindow)
+    : m_window(renderWindow)
 {
-    m_ellipseVec.reserve(5000);
+    m_ellipseVec.reserve(923000);
 
     if(! m_inputImg.loadFromFile(path)) throw std::runtime_error("Failed to load image: " + path);
 
@@ -35,9 +44,13 @@ Picture::Picture(const std::string& path, int ellipseCount, sf::RenderWindow* re
 
     m_evolvedOutputImg = m_currentOutputImg;
 
+
+
     m_ellipseVec.emplace_back(
         utils::rndVector(m_canvasSize),
-        utils::rndVector(m_canvasSize/2.00f),
+        // utils::rndVector(m_canvasSize/2.00f),
+        utils::rndVector(radiusFromFitness()),
+        // radiusFromFitness(),
         utils::rndFloat(360.0f),
         utils::rndColor()
     );
@@ -92,7 +105,9 @@ void Picture::mutate()
         {
             m_ellipseVec[i] = Ellipse(
                 utils::rndVector(m_canvasSize),
-                utils::rndVector(m_canvasSize / 2.0f),
+                // utils::rndVector(m_canvasSize / 2.0f),
+                utils::rndVector(radiusFromFitness()),
+                // radiusFromFitness(),
                 utils::rndFloat(360.0f),
                 utils::rndColor()
             );
@@ -122,9 +137,12 @@ void Picture::mutate()
             m_evolvedOutputImg = m_currentOutputImg;
         }
 
+
         m_ellipseVec.emplace_back(
-            utils::rndVector(m_canvasSize),
-            utils::rndVector(m_canvasSize / 2.0f),
+            utils::rndVector(m_canvasSize), 
+            // utils::rndVector(m_canvasSize / 2.0f),
+            utils::rndVector(radiusFromFitness()),
+            // radiusFromFitness(),
             utils::rndFloat(360.0f),
             utils::rndColor()
         );
@@ -161,6 +179,20 @@ void Picture::draw()
     m_window->display();
 }
 
+sf::Vector2f Picture::radiusFromFitness()
+{
+    sf::Vector2f maxRadius = m_canvasSize * 0.2f;
+    sf::Vector2f minRadius = m_canvasSize * 0.01f;
+
+    // float t = 1.0f - m_fitnessCurr;
+    // sf::Vector2f radius
+    // return minRadius + m_fitnessCurr * (maxRadius - minRadius);
+    float t = std::log10(m_fitnessCurr + 1e-6f); // avoids log(0)
+    t = std::clamp(t, -6.0f, 0.0f);  // log10 of [1e-6, 1] → [-6, 0]
+    t = 1.0f + (t / 6.0f); // remap to [0, 1]
+    return minRadius + t * (maxRadius - minRadius);
+}
+
 
 void Picture::computeFitness()
 {
@@ -186,5 +218,9 @@ void Picture::computeFitness()
 
     m_fitnessCurr /= (pixelCount * 255.0f) * 100.0f;
 
+    ////////
+    if(m_initialFitness < 0.0f) m_initialFitness = m_fitnessCurr;
+
+    m_bestFitness = std::min(m_bestFitness, m_fitnessCurr);
 }
 

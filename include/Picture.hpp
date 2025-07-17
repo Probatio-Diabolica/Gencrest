@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <limits>
 #include <vector>
 #include <optional>
 
@@ -13,12 +14,17 @@
 class Picture
 {
 public:
-    Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow);
+    // Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow);
+    Picture(const std::string& path,  sf::RenderWindow* renderWindow);
+
+
 
     void mutate();
     void computeFitness();
 
 private:
+    //heuristic func
+    sf::Vector2f radiusFromFitness();
     void draw();
     
     sf::Image m_inputImg;
@@ -29,11 +35,16 @@ private:
     Ellipse                 m_buffer;
 
 
-    int m_ellipseCount     = 0;
-    int m_noEvolutionSteps = 0;
-    float m_fitnessPrev = 255.0f;
-    float m_fitnessCurr = 255.0f;
+    // int m_ellipseCount     = 0;
+    int m_noEvolutionSteps      = 0;
+    float m_fitnessPrev         = 255.0f;
+    float m_fitnessCurr         = 255.0f;
+    //////
+    float m_initialFitness      = -1.f;
+    float m_bestFitness         = std::numeric_limits<float>::max();
+    //////
     bool m_lastMutationAccepted = false;
+    
 
     sf::Vector2f m_canvasSize;
 
