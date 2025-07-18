@@ -1,37 +1,49 @@
-# Hill Climbing Image Reconstructor 
-An image reconstructor that recreates an image using a steepest ascent hill climbing algorithm.
+# Hill Climbing Image Reconstructor
 
-## Features::
+An image reconstructor that recreates a target image using a steepest-ascent hill climbing algorithm with procedural ellipses.
 
-- Hill climbing optimization
-- Procedural shape-based image generation
-- Uses SFML 3.0 for rendering
+---
 
-## Working::
+## Features
 
-The algorithm starts with a blank canvas and iteratively adds random ellipses. If a new ellipse improves the image's similarity to the target image, it is kept; otherwise, it's discarded.
+- Hill climbing optimization for image similarity  
+- Procedural shape-based (ellipse) image generation  
+- Pixel-accurate fitness calculation using raw image data  
+- SFML 3.0 rendering for visual output  
 
-Each step:
-1. Mutate the latest ellipse
-2. Render to a new buffer
-3. Compare fitness to original image
-4. Keep or discard based on improvement
+---
+
+## How It Works
+
+The algorithm starts with a blank canvas and adds random translucent ellipses one at a time. At each iteration:
+
+1. A new ellipse is randomly mutated  
+2. It is rendered onto a copy of the current output buffer  
+3. The result is compared to the target image using a pixel-wise fitness function  
+4. If the fitness improves, the new ellipse is accepted and committed  
+
+This process continues until the desired runtime or quality is achieved.
+
+---
 
 ## Dependencies
+- SFML 3.0 (make sure to install it via your package manager)
+- CMake ≥ 3.20  
+- C++23-compatible compiler  
+- Linux distribution that supports sfml 3.0
 
-- **SFML 3.0**
-- **CMake ≥ 3.20**
-- **C++23-compatible compiler** (GCC 13+)
-- **Unix-like System**
+---
 
-## Build Instructions for unix
+## Build Instructions
+
 ```bash
 git clone https://github.com/Probatio-Diabolica/Gencrest.git
-
+cd Gencrest
 ./build.sh
 ```
 
-## Running
+## Running:
+
 ```bash
-./picasoSingh <image_path> <no_of_ellipses >= 1>
+./picasoSingh <image_path>
 ```
