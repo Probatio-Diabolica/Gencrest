@@ -18,7 +18,6 @@ public:
     void rotate(float angleDegrees);
     void scale(const sf::Vector2f& factor);
 
-    void renderOnto(sf::Image& image) const;
     void renderOnto(std::vector<u_int8_t> &pixles, sf::Vector2f& canvasSize) const;
 
     sf::Color& getColor();
