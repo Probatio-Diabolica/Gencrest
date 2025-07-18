@@ -11,6 +11,9 @@
 
 #include "Ellipse.hpp"
 
+using rawPixels = std::vector<u_int8_t>;
+
+
 class Picture
 {
 public:
@@ -29,7 +32,7 @@ private:
     
     sf::Image m_inputImg;
     sf::Image m_currentOutputImg;
-    sf::Image m_evolvedOutputImg;
+    // sf::Image m_evolvedOutputImg;
 
     std::vector<Ellipse>    m_ellipseVec;
     Ellipse                 m_buffer;
@@ -48,6 +51,12 @@ private:
 
     sf::Vector2f m_canvasSize;
 
+    ////////////////////////////////
+    rawPixels m_currRawOutput;
+    rawPixels m_currRawEvoOutput;
+    unsigned m_width = 0;
+    unsigned m_height = 0;
+    ////////////////////////////////
     sf::Texture m_currentTexture;
     sf::Texture m_inputTexture;
     std::optional<sf::Sprite>  m_outputSprite;
