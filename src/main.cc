@@ -6,7 +6,7 @@
 #include <exception>
 #include <iostream>
 
-#include "../include/Picture.hpp"
+#include "../include/Canvas.hpp"
 
 void usage()
 {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     try
     {
         // Picture pic(imgPath,ellipseCount, &window);
-        Picture pic(imgPath, &window);
+        Canvas pic(imgPath, &window);
 
         while(window.isOpen())
         {

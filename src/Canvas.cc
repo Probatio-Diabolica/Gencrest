@@ -1,4 +1,4 @@
-#include "../include/Picture.hpp"
+#include "../include/Canvas.hpp"
 #include "../include/Util.hpp"
 #include "Ellipse.hpp"
 #include <SFML/Graphics/Color.hpp>
@@ -25,13 +25,13 @@ namespace
     sf::Vector2f extraScale{4.f,4.f};
     sf::Vector2f ultra{8.f,8.f};
 
-    sf::Vector2f inputScale = scale;
-    sf::Vector2f outputScale = scale;
+    sf::Vector2f inputScale = extraScale;
+    sf::Vector2f outputScale = extraScale;
     sf::Vector2f processScale = scale;
 
 }
 
-Picture::Picture(const std::string& path, sf::RenderWindow* renderWindow)
+Canvas::Canvas(const std::string& path, sf::RenderWindow* renderWindow)
     : m_window(renderWindow)
 {
     m_ellipseVec.reserve(923000);
@@ -80,7 +80,7 @@ Picture::Picture(const std::string& path, sf::RenderWindow* renderWindow)
 
 
 
-void Picture::mutate()
+void Canvas::mutate()
 {
     const int i = static_cast<int>(m_ellipseVec.size()) - 1;
 
@@ -158,7 +158,7 @@ void Picture::mutate()
     }
 }
 
-void Picture::draw()
+void Canvas::draw()
 {
     sf::Image outputImg({m_width,m_height},m_currRawEvoOutput.data());
 
@@ -176,7 +176,7 @@ void Picture::draw()
     m_window->display();
 }
 
-sf::Vector2f Picture::radiusFromFitness()
+sf::Vector2f Canvas::radiusFromFitness()
 {
     sf::Vector2f maxRadius = m_canvasSize * 0.2f;
     sf::Vector2f minRadius = m_canvasSize * 0.01f;
@@ -188,7 +188,7 @@ sf::Vector2f Picture::radiusFromFitness()
 }
 
 
-void Picture::computeFitness()
+void Canvas::computeFitness()
 {
     m_fitnessPrev = m_fitnessCurr;
     m_fitnessCurr = 0.0f;

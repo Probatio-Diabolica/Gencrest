@@ -14,11 +14,11 @@
 using rawPixels = std::vector<u_int8_t>;
 
 
-class Picture
+class Canvas
 {
 public:
     // Picture(const std::string& path, int ellipseCount, sf::RenderWindow* renderWindow);
-    Picture(const std::string& path,  sf::RenderWindow* renderWindow);
+    Canvas(const std::string& path,  sf::RenderWindow* renderWindow);
 
 
 
