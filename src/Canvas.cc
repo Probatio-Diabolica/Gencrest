@@ -25,9 +25,9 @@ namespace
     sf::Vector2f extraScale{4.f,4.f};
     sf::Vector2f ultra{8.f,8.f};
 
-    sf::Vector2f inputScale = extraScale;
-    sf::Vector2f outputScale = extraScale;
-    sf::Vector2f processScale = scale;
+    sf::Vector2f inputScale     = scale;
+    sf::Vector2f outputScale    = scale;
+    sf::Vector2f processScale   = scale;
 
 }
 
